@@ -1,8 +1,11 @@
-import streamlit as st
-from langchain_ollama.llms import OllamaLLM
+import streamlit as st 
+from langchain_community.llms import Ollama 
+import pandas as pd
 from langchain_core.prompts import ChatPromptTemplate
 
-model = OllamaLLM(model="llama3.2", base_url="http://13.126.61.209/11434")
+llm = Ollama(model="llama3.2", base_url ="http://13.126.61.209:11434")
+
+st.title("Commudle Chatbot")
 
 template = """
 Answer the Question below.
@@ -13,15 +16,21 @@ Question: {question}
 
 Answer:
 """
+
 prompt = ChatPromptTemplate.from_template(template)
-chain = prompt | model
+
+#prompt = st.text_area("Enter your prompt:")
+
+# if st.button("Generate"):
+#         if prompt:
+#             with st.spinner("Generating response..."):
+#                 st.write_stream(llm.stream(prompt, stop=['<|eot-id|>']))
 
 def handle_conversation(context, question):
-    result = chain.invoke({"context": context, "question": question})
+    prompt = f"{context}\nUser: {question}\nAI:"
+    result = llm.invoke(prompt)
     context += f"\nUser: {question}\nAI: {result}"
     return result, context
-
-st.title("Commudle Chatbot")
 
 if "context" not in st.session_state:
     st.session_state.context = ""
@@ -37,3 +46,4 @@ if st.button("Send"):
 if st.session_state.context:
     st.write("Conversation History:")
     st.text(st.session_state.context)
+
